@@ -66,6 +66,11 @@ pub mod leds {
     use libtock_leds as leds;
     pub type Leds = leds::Leds<super::runtime::TockSyscalls>;
 }
+pub mod ipc {
+    use libtock_ipc as ipc;
+    pub type Ipc = ipc::Ipc<super::runtime::TockSyscalls>;
+    pub use ipc::IpcCallback;
+}
 pub mod low_level_debug {
     use libtock_low_level_debug as lldb;
     pub type LowLevelDebug = lldb::LowLevelDebug<super::runtime::TockSyscalls>;
