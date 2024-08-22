@@ -2,6 +2,7 @@
 
 use core::cell::Cell;
 use libtock_platform as platform;
+use libtock_platform::async_helpers;
 use libtock_platform::share;
 use libtock_platform::{DefaultConfig, ErrorCode, Syscalls};
 
@@ -100,6 +101,27 @@ impl<S: Syscalls, C: platform::subscribe::Config> Alarm<S, C> {
                 }
             }
         })
+    }
+
+    pub async fn async_sleep_for<T: Convert>(time: T) -> Result<(), ErrorCode> {
+        let freq = Self::get_frequency()?;
+        let ticks = time.to_ticks(freq);
+
+        let called: Cell<Option<(u32, u32)>> = Cell::new(None);
+
+        // We need the subscription to live until the end of the function.
+        let _subscription =
+            async_helpers::SubscribeUpcall::<S>::new(DRIVER_NUM, subscribe::CALLBACK, &called)?;
+        S::command(DRIVER_NUM, command::SET_RELATIVE, ticks.0, 0)
+            .to_result()
+            .map(|_when: u32| ())?;
+
+        loop {
+            async_helpers::Yield::now().await;
+            if let Some((_when, _ref)) = called.get() {
+                return Ok(());
+            }
+        }
     }
 }
 

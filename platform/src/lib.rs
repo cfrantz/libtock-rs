@@ -3,6 +3,7 @@
 
 pub mod allow_ro;
 pub mod allow_rw;
+pub mod async_helpers;
 pub mod command_return;
 mod constants;
 mod default_config;
